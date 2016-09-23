@@ -11,10 +11,10 @@ def GetConditionName():
 
 def GetSpellCasterConditionName():
         return "Bladesinger Spellcasting"
-    
+
 print "Registering " + GetConditionName()
 
-classEnum = stat_level_bladesinger
+classEnum = 33 #stat_level_bladesinger
 classSpecModule = __import__('class033_bladesinger')
 ###################################################
 
@@ -41,10 +41,11 @@ def OnGetSaveThrowWill(attachee, args, evt_obj):
         return 0
 
 def IsLightlyArmored( obj ):
+
         armor = obj.item_worn_at(5)
         if armor != OBJ_HANDLE_NULL:
                 armorFlags = armor.obj_get_int(obj_f_armor_flags)
-                if armorFlags != ARMOR_TYPE_NONE or ARMOR_TYPE_LIGHT:
+                if armorFlags != ARMOR_TYPE_NONE and armorFlags != ARMOR_TYPE_LIGHT:
                         return 0
         shield = obj.item_worn_at(11)
         if shield != OBJ_HANDLE_NULL:
@@ -58,9 +59,13 @@ def IsRangedWeapon( weap ):
         return 1
 
 def IsRapierorLongsword ( obj, weap):
-        weaponType = obj.get_weapon_type(weap, 1)
-        if weaponType != wt_rapier or wt_longsword:
+        if weap == OBJ_HANDLE_NULL:
                 return 0
+        weaponType = weap.obj_get_int(obj_f_weapon_type)
+        #print "Weapon typye: " +  str(weaponType)
+        if weaponType != wt_rapier and weaponType != wt_longsword:
+                return 0
+        return 1
 
 def IsUsingBladeSongWeapon( obj ):
         weap = obj.item_worn_at(3)
@@ -76,18 +81,11 @@ def IsUsingBladeSongWeapon( obj ):
                 if IsRapierorLongsword(obj, offhand):
                         return 1
         return 0
-    
+
 def BladesongAcBonus(attachee, args, evt_obj):
         if not IsLightlyArmored(attachee):
                 return 0
-        if not IsUsingBladeSongWeapon(obj, weap):
-                return 0
-        if offhand != OBJ_HANDLE_NULL:
-                return 0
-        weap = attachee.item_worn_at(3)
-        if weap == OBJ_HANDLE_NULL or IsRangedWeapon(weap):
-                weap = attachee.item_worn_at(4)
-        if weap == OBJ_HANDLE_NULL or IsRangedWeapon(weap):
+        if not IsUsingBladeSongWeapon(attachee):
                 return 0
         bladesingerLvl = attachee.stat_level_get(classEnum)
         intScore = attachee.stat_level_get(stat_intelligence)
@@ -109,15 +107,16 @@ classSpecObj.AddHook(ET_OnGetAC, EK_NONE, BladesongAcBonus, ())
 ##### Spell casting
 
 def OnAddSpellCasting(attachee, args, evt_obj):
-        if (args.get_arg(0) == 0):
+        if args.get_arg(0) == 0:
                 args.set_arg(0, char_class_utils.GetHighestArcaneClass(attachee))
         return 0
 
 def OnGetBaseCasterLevel(attachee, args, evt_obj):
+        #print "Bladesinger OnGetBaseCasterLevel: Called with arg0 " + str(evt_obj.arg0)
         class_extended_1 = args.get_arg(0)
         class_code = evt_obj.arg0
-        if (class_code != class_extended_1):
-                if (evt_obj.arg1 == 0):
+        if class_code != class_extended_1:
+                if evt_obj.arg1 == 0:
                         return 0
         classLvl = attachee.stat_level_get(classEnum)
         evt_obj.bonus_list.add(classLvl, 0, 137)
@@ -126,40 +125,43 @@ def OnGetBaseCasterLevel(attachee, args, evt_obj):
 def OnSpellListExtensionGet(attachee, args, evt_obj):
         class_extended_1 = args.get_arg(0)
         class_code = evt_obj.arg0
-        if (class_code != class_extended_1):
-                if (evt_obj.arg1 == 0):
+        if class_code != class_extended_1:
+                if evt_obj.arg1 == 0:
                         return 0
         classLvl = attachee.stat_level_get(classEnum)
         evt_obj.bonus_list.add(classLvl, 0, 137)
         return 0
 
 def OnInitLevelupSpellSelection(attachee, args, evt_obj):
-        if (evt_obj.arg0 != classEnum):
+        #print "Bladesinger OnInitLevelupSpellSelection: Called with arg0 " + str(evt_obj.arg0)
+        if evt_obj.arg0 != classEnum:
                 return 0
         classLvl = attachee.stat_level_get(classEnum)
-        if (classLvl == 0):
+        if classLvl == 0:
                 return 0
         class_extended_1 = args.get_arg(0)
         classSpecModule.InitSpellSelection(attachee, class_extended_1)
         return 0
 
 def OnLevelupSpellsCheckComplete(attachee, args, evt_obj):
-        if (evt_obj.arg0 != classEnum):
+        #print "Bladesinger OnLevelupSpellsCheckComplete: Called with arg0 " + str(evt_obj.arg0)
+        if evt_obj.arg0 != classEnum:
                 return 0
         class_extended_1 = args.get_arg(0)
-        if (not classSpecModule.LevelupCheckSpells(attachee, class_extended_1) ):
+        if not classSpecModule.LevelupCheckSpells(attachee, class_extended_1):
                 evt_obj.bonus_list.add(-1, 0, 137)
         return 1
-        
+
 def OnLevelupSpellsFinalize(attachee, args, evt_obj):
-        if (evt_obj.arg0 != classEnum):
+        #print "Bladesinger OnLevelupSpellsFinalize: Called with arg0 " + str(evt_obj.arg0)
+        if evt_obj.arg0 != classEnum:
                 return 0
         classLvl = attachee.stat_level_get(classEnum)
-        if (classLvl == 0):
+        if classLvl == 0:
                 return 0
         class_extended_1 = args.get_arg(0)
         classSpecModule.LevelupSpellsFinalize(attachee, class_extended_1)
-        return
+        return 0
 
 spellCasterSpecObj = PythonModifier(GetSpellCasterConditionName(), 8)
 spellCasterSpecObj.AddHook(ET_OnConditionAdd, EK_NONE, OnAddSpellCasting, ())
