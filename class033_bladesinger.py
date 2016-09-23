@@ -85,11 +85,11 @@ def ObjMeetsPrereqs( obj ):
 #Spellcasting on Level Up
 
 def IsSelectingSpellsOnLevelup( obj , class_extended_1 = 0):
-	if (class_extended_1 == 0):
-		class_extended_1 = char_class_utils.GetHighestArcaneClass(obj)
-	if (char_editor.is_selecting_spells(obj, class_extended_1)):
-		return 1
-	return 0
+    if (class_extended_1 == 0):
+        class_extended_1 = char_class_utils.GetHighestArcaneClass(obj)
+    if (char_editor.is_selecting_spells(obj, class_extended_1)):
+        return 1
+    return 0
 
 def LevelupCheckSpells( obj , class_extended_1 = 0):
         if (class_extended_1 == 0):
@@ -99,10 +99,10 @@ def LevelupCheckSpells( obj , class_extended_1 = 0):
         return 1
         
 def InitSpellSelection( obj , class_extended_1 = 0):
-	if (class_extended_1 == 0):
-		class_extended_1 = char_class_utils.GetHighestArcaneClass(obj)
-	char_editor.init_spell_selection(obj, class_extended_1)
-	return 0
+    if (class_extended_1 == 0):
+        class_extended_1 = char_class_utils.GetHighestArcaneClass(obj)
+    char_editor.init_spell_selection(obj, class_extended_1)
+    return 0
 
 def LevelupSpellsFinalize( obj , class_extended_1 = 0):
         if (class_extended_1 == 0):
